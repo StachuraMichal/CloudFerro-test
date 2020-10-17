@@ -15,6 +15,10 @@ int main(int, char**) {
     );
 
     MyServer server(initial_connection);
+    auto res = server.query_employee("Stachura");
+    for (auto& it: res) {
+        std::cout<<it.first<<"\t"<<it.second<<std::endl;
+    }
     //MyServer s1;
     //s1.ping();
     //MyServer s1;
