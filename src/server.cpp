@@ -18,12 +18,15 @@ ConnectionData::ConnectionData(
     this->host = "localhost";
 }
 
-MyServer::MyServer(ConnectionData &con)
+Server::Server(ConnectionData &con)
 {
     connect(con);
 }
+Server::Server(std::string pg_port, std::string dbname, std::string user, std::string password, std::string redis_port){
+    connect(ConnectionData(pg_port, dbname, user, password, redis_port));
+}
 
-std::string MyServer::connect(ConnectionData &con)
+std::string Server::connect(const ConnectionData &con)
 {
     try
     {
@@ -62,11 +65,11 @@ std::string MyServer::connect(ConnectionData &con)
     }
 }
 
-MyServer::~MyServer()
+Server::~Server()
 {
 }
 
-std::unordered_map<std::string, std::string> MyServer::query_employee(std::string surname)
+std::unordered_map<std::string, std::string> Server::query_employee(std::string surname)
 {
     std::unordered_map<std::string, std::string> response;
     auto status = this->status();
@@ -107,7 +110,7 @@ std::unordered_map<std::string, std::string> MyServer::query_employee(std::strin
     return response;
 }
 
-bool MyServer::insert_data(std::unordered_map<std::string, std::string> &data)
+bool Server::insert_data(std::unordered_map<std::string, std::string> &data)
 {
     if (this->status() != "ok" || data.empty())
         return false;
@@ -136,7 +139,7 @@ bool MyServer::insert_data(std::unordered_map<std::string, std::string> &data)
     return true;
 }
 
-std::string MyServer::status()
+std::string Server::status()
 {
     bool redis_status = false;
     bool pg_status = false;
