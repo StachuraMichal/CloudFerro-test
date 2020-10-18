@@ -5,20 +5,15 @@
 #include <sw/redis++/redis++.h>
 #include <pqxx/pqxx>
 
-class ServerTools
-{
-public:
-    std::string sanatize(std::string input);
-};
 
-struct ConnectionData : public ServerTools
+struct ConnectionData 
 {
     std::string host, pg_port, dbname, user, password, redis_port;
 
     ConnectionData(std::string pg_port, std::string dbname, std::string user, std::string password, std::string redis_port);
 };
 
-class MyServer : public ServerTools
+class MyServer 
 {
 private:
     std::unique_ptr<sw::redis::Redis> redis = NULL;
@@ -27,9 +22,8 @@ private:
 public:
     MyServer(ConnectionData &con);
     ~MyServer();
-
+    bool insert_data(std::unordered_map<std::string, std::string>& data);
     std::unordered_map<std::string, std::string> query_employee(std::string surname);
-    //     MyServer();
     void ping();
-    //     //std::string status();
+    std::string status();
 };

@@ -4,11 +4,7 @@
 #include <vector>
 #include <chrono>
 #include "server.h"
-
-std::string ServerTools::sanatize(std::string input)
-{
-    return "";
-}
+#include <exception>
 
 ConnectionData::ConnectionData(
     std::string pg_port,
@@ -32,9 +28,9 @@ MyServer::MyServer(ConnectionData &con)
                                        " user=" + con.user +
                                        " password=" + con.password;
 
-    redis = std::unique_ptr<sw::redis::Redis>(new sw::redis::Redis(redis_connenction.c_str()));
+    this->redis = std::unique_ptr<sw::redis::Redis>(new sw::redis::Redis(redis_connenction.c_str()));
 
-    pg_connection = std::unique_ptr<pqxx::connection>(new pqxx::connection(pg_connection_string.c_str()));
+    this->pg_connection = std::unique_ptr<pqxx::connection>(new pqxx::connection(pg_connection_string.c_str()));
     pqxx::work wrk(*pg_connection);
 
     pqxx::result res = wrk.exec("select to_regclass('pracownicy')");
@@ -60,36 +56,73 @@ MyServer::~MyServer()
 std::unordered_map<std::string, std::string> MyServer::query_employee(std::string surname)
 {
     std::unordered_map<std::string, std::string> response;
-    redis->hgetall(surname, std::inserter(response, response.begin()));
+    this->redis->hgetall(surname, std::inserter(response, response.begin()));
 
-    if(!response.empty()) {
+    if (!response.empty())
+    {
         response.insert({"from", "cache"});
         response.insert({"status", "ok"});
         return response;
     }
 
-    pqxx::work wrk(*pg_connection);
+    pqxx::work wrk(*this->pg_connection);
     pqxx::result res = wrk.exec("select * from pracownicy where nazwisko =" + wrk.quote(surname) + "limit 1");
-    if(res.empty()) {
+    if (res.empty())
+    {
         response.insert({"status", "not found"});
         return response;
     }
-    for (auto row : res) {
-        for (auto pos : row) {
-            response.insert({pos.name() ,pos.c_str()});
+    for (auto row : res)
+    {
+        for (auto pos : row)
+        {
+            response.insert({pos.name(), pos.c_str()});
         }
-        redis->hmset(response.at("nazwisko"), response.begin(), response.end());
-        redis->expire(response.at("nazwisko"), std::chrono::seconds(120));
-
-        response.insert({"from", "postgres"});
-        response.insert({"status", "ok"});
-        
     }
+    this->redis->hmset(response.at("nazwisko"), response.begin(), response.end());
+    this->redis->expire(response.at("nazwisko"), std::chrono::seconds(120));
+
+    response.insert({"from", "postgres"});
+    response.insert({"status", "ok"});
 
     return response;
 }
 
+bool MyServer::insert_data(std::unordered_map<std::string, std::string>& data){
+    pqxx::work wrk(*this->pg_connection);
+    std::string string_values = "";
+    std::string string_columns = "";
+
+    try{
+        for (auto it: data) {
+            string_columns += wrk.quote_name(it.first)+",";
+            string_values += wrk.quote(it.second)+",";
+        }
+        string_values.erase(string_values.end()-1);
+        string_columns.erase(string_columns.end()-1);
+        wrk.exec0("insert into pracownicy ("+string_columns+") values ("+string_values+")");
+        wrk.commit();
+    }
+    catch(std::exception& e) {
+        std::cout<<e.what()<<std::endl;
+        return false;
+    }
+    return true;
+}
+
+
 void MyServer::ping()
 {
     std::cout << "Pong" << std::endl;
+}
+
+std::string MyServer::status()
+{
+    if (this->redis->ping() == "PONG" && this->pg_connection->is_open() == true)
+        return "ok";
+    if (this->redis->ping() == "PONG")
+        return "something wrong with postgres!";
+    if (this->pg_connection->is_open() == true)
+        return "something wrong with redis!";
+    return "something wrong with redis and postgres!";
 }

@@ -1,41 +1,30 @@
 #include <iostream>
-#include <sw/redis++/redis++.h>
-#include <pqxx/pqxx>
 #include <string>
 #include <vector>
 #include "server.h"
 
-using namespace sw::redis;
 
 int main(int, char**) {
-    ServerTools d;
-    std::cout<<d.sanatize("dasd");
+
     ConnectionData initial_connection(
             "5431", "my_company", "postgres", "admin1", "6379"
     );
 
     MyServer server(initial_connection);
-    auto res = server.query_employee("Stachura");
+    auto res = server.query_employee("Stachura'; DROP TABLE users; --");
     for (auto& it: res) {
         std::cout<<it.first<<"\t"<<it.second<<std::endl;
     }
-    //MyServer s1;
-    //s1.ping();
-    //MyServer s1;
-    //s1.ping();
-    std::cout << "Hello, world!\n";
-   // auto redis = Redis("tcp://127.0.0.1:6379");
-    //std::cout<<redis.ping()<<std::endl;
-    // std::string con_s = ("host=localhost port=5431 dbname=my_company user=postgres password=admin1");
-    // pqxx::connection con(con_s.c_str());
-    // pqxx::work wrk(con);
-    // pqxx::result res = wrk.exec("select * from employee");
-    // if(res.size()<1){
-    //     std::cout<<"łupsssss"<<std::endl;
-    //     return -1;
-    // }
-    // for (auto record : res) {
-    //     std::cout<<record[0]<<std::endl;
-    // }
+    std::cout<<server.status()<<std::endl;
+
+    std::unordered_map<std::string, std::string> new_employee;
+    new_employee.insert({"imie", "Kuba'; DROP TABLE pracownicy; --"});
+    new_employee.insert({"nazwisko", "Rozpruwacz"});
+    new_employee.insert({"data_urodzenia", "1.08.1795"});
+    new_employee.insert({"stanowisko", "rzeźnik pasjonata"});
+
+    server.insert_data(new_employee);
+
+ 
 
 }
