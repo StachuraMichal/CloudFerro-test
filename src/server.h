@@ -22,8 +22,8 @@ private:
 public:
     MyServer(ConnectionData &con);
     ~MyServer();
+    std::string connect(ConnectionData &con);
     bool insert_data(std::unordered_map<std::string, std::string>& data);
     std::unordered_map<std::string, std::string> query_employee(std::string surname);
-    void ping();
     std::string status();
 };

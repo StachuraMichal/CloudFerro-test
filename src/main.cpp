@@ -21,7 +21,7 @@ int main(int, char**) {
     new_employee.insert({"imie", "Kuba'; DROP TABLE pracownicy; --"});
     new_employee.insert({"nazwisko", "Rozpruwacz"});
     new_employee.insert({"data_urodzenia", "1.08.1795"});
-    new_employee.insert({"stanowisko", "rzeźnik pasjonata"});
+    new_employee.insert({"stanowisko\"; DROP TABLE pracownicy; --", "rzeźnik pasjonata"});
 
     server.insert_data(new_employee);
 
