@@ -5,12 +5,15 @@
 #include <unordered_map>
 using namespace std;
 
+void test();
+
 int main(int argc, char const *argv[])
 {
+    TEST_DECORATOR(test());
+    return 0;
+}
 
-    drop_table_pracownicy();
-    clearRedis();
-
+void test(){
     auto server = getServer();
     std::unordered_map<std::string, std::string> new_employee;
     new_employee.insert({"imie", "Kuba"});
@@ -31,9 +34,4 @@ int main(int argc, char const *argv[])
         if (respone["nazwisko"] != surnames[i])
             throw;
     }
-
-    clearRedis();
-    drop_table_pracownicy();
-
-    return 0;
 }

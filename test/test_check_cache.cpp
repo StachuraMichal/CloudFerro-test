@@ -6,10 +6,17 @@
 #include <thread>
 
 using namespace std;
+
+void test();
+
 int main(int argc, char const *argv[])
 {
-    drop_table_pracownicy();
-    clearRedis();
+    TEST_DECORATOR(test());
+    return 0;
+}
+
+
+void test(){
     auto server = getServer();
     std::unordered_map<std::string, std::string> new_employee;
     new_employee.insert({"imie", "Kuba"});
@@ -33,9 +40,4 @@ int main(int argc, char const *argv[])
     response = server->query_employee(new_employee["nazwisko"]);
     if (response["from"] != "postgres")
         throw Myexception(response["from"]);
-
-    clearRedis();
-    drop_table_pracownicy();
-
-    return 0;
 }

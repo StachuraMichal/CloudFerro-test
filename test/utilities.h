@@ -2,6 +2,11 @@
 
 #include "server.h"
 #include <string>
+#define TEST_DECORATOR(x) drop_table_pracownicy();\
+    clearRedis();\
+    x;\
+    drop_table_pracownicy();\
+    clearRedis()
 
 using namespace std;
 

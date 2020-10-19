@@ -23,7 +23,6 @@ find_library(HIREDIS_LIB hiredis)
 target_link_libraries(${PROJECT_NAME} ${HIREDIS_LIB})
 
 # <------------ add redis-plus-plus dependency -------------->
-# NOTE: this should be *sw* NOT *redis++*
 find_path(REDIS_PLUS_PLUS_HEADER sw)
 target_include_directories(${PROJECT_NAME} PUBLIC ${REDIS_PLUS_PLUS_HEADER})
 
